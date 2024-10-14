@@ -1,29 +1,27 @@
 import express, { Request, Response } from 'express';
-import { isTokenValid } from '../middleware/user.middleware';
-
-import TwitchService from '../services/twitch.service';
-
-const twitchService = TwitchService.getInstance();
+import { getLastFollow } from '../services/twitch.service';
+import { getUser } from '../middleware/user.middleware';
+import fetchAllData from '../services/fetcher.service';
 
 const router = express.Router();
 
-router.get('/bans', [isTokenValid], async (req: Request, res: Response) => {
+router.get('/data', [getUser], async (req: Request, res: Response) => {
     const { user } = res.locals;
-    const bans = await twitchService.getUserBan(user.id);
-    res.send(bans);
+
+    if (!user) {
+        res.status(401).send({ message: "Unauthorized" });
+        return;
+    }
+
+    //const lastFollow: string = await getLastFollow(user.userInfo.id);
+
+    //res.send(lastFollow);
+
+    const data = fetchAllData(user.userInfo.id);
+    res.send(200)
 });
 
-router.get('/bans/legacy', [isTokenValid], async (req: Request, res: Response) => {
-    const { user } = res.locals;
-    const bans = await twitchService.getLegacyBans(user.id);
-    res.send(bans);
-});
 
-router.get('/bans/relations', [isTokenValid], async (req: Request, res: Response) => {
-    const { user } = res.locals;
-    const bans = await twitchService.getRelationsBans(user.id);
-    res.send(bans);
-});
 
 
 export default router;
